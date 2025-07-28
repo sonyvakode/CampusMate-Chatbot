@@ -29,14 +29,14 @@ st.divider()
 
 # --- Input Section ---
 if not st.session_state.edit_mode:
-    user_input = st.text_input("Ask CampusMate:", key="input_box")
+    user_input = st.text_input("🧑‍🎓 You:", key="input_box")
 else:
-    user_input = st.text_input("Edit your previous question:", st.session_state.edited_input, key="edit_box")
+    user_input = st.text_input("✏️ Edit your previous question:", st.session_state.edited_input, key="edit_box")
 
 col1, col2 = st.columns([1, 1])
 with col1:
     if st.button("Send") and user_input.strip():
-        with st.spinner("CampusMate is thinking..."):
+        with st.spinner("🤖 CampusMate is thinking..."):
             response = ask_dify(user_input)
             st.session_state.chat_history.append(("You", user_input))
             st.session_state.chat_history.append(("CampusMate", response))
@@ -71,8 +71,10 @@ if st.session_state.chat_history:
         st.subheader("💬 Chat History")
         for sender, msg in filtered_history:
             if sender == "You":
-                st.info(f"🧑‍🎓 {sender}: {msg}")
+                with st.chat_message("user"):
+                    st.markdown(f"**🧑‍🎓 You:** {msg}")
             else:
-                st.success(f"🤖 {sender}: {msg}")
+                with st.chat_message("assistant"):
+                    st.markdown(f"**🤖 CampusMate:** {msg}")
     else:
         st.warning("No results found in chat history.")
