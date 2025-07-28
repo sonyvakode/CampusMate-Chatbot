@@ -3,37 +3,9 @@ from utils.chat import ask_dify
 
 # Page setup
 st.set_page_config(page_title="🎓 CampusMate Chatbot", layout="centered")
-
-# Apply custom style
-st.markdown("""
-    <style>
-    .stApp {
-        background-color: #f2f4f8;
-    }
-    input[type="text"] {
-        color: black !important;
-        background-color: white !important;
-    }
-    .you-bubble {
-        background-color: #ffffff;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        border-left: 5px solid #00000010;
-    }
-    .bot-bubble {
-        background-color: #d9fdd3;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 12px;
-        border-left: 5px solid #34a853;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 st.title("🎓 CampusMate – AI Assistant (Gemini 2.0 Flash)")
 
-# --- Session State Init ---
+# Session state setup
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "edit_mode" not in st.session_state:
@@ -43,8 +15,8 @@ if "edited_input" not in st.session_state:
 if "search_term" not in st.session_state:
     st.session_state.search_term = ""
 
-# --- Header ---
-col1, col2 = st.columns([1, 5])
+# --- Top Controls ---
+col1, col2 = st.columns([1, 4])
 with col1:
     if st.button("🧹 New Chat"):
         st.session_state.chat_history.clear()
@@ -85,10 +57,10 @@ with col2:
 
 st.divider()
 
-# --- Search Chat ---
+# --- Search Chat History ---
 if st.session_state.chat_history:
     search_input = st.text_input("🔍 Search Chat History", value=st.session_state.search_term, key="search_bar")
-    st.session_state.search_term = search_input
+    st.session_state.search_term = search_input.strip()
 
     filtered_history = [
         (sender, msg) for sender, msg in st.session_state.chat_history
@@ -96,11 +68,11 @@ if st.session_state.chat_history:
     ] if st.session_state.search_term else st.session_state.chat_history
 
     if filtered_history:
-        st.markdown("### 💬 Chat History")
+        st.subheader("💬 Chat History")
         for sender, msg in filtered_history:
             if sender == "You":
-                st.markdown(f"<div class='you-bubble'>🧑‍🎓 <strong>{sender}:</strong> {msg}</div>", unsafe_allow_html=True)
+                st.info(f"🧑‍🎓 {sender}: {msg}")
             else:
-                st.markdown(f"<div class='bot-bubble'>🤖 <strong>{sender}:</strong> {msg}</div>", unsafe_allow_html=True)
+                st.success(f"🤖 {sender}: {msg}")
     else:
         st.warning("No results found in chat history.")
