@@ -1,11 +1,33 @@
 import streamlit as st
 from utils.chat import ask_dify
 
-# Page setup
-st.set_page_config(page_title="🎓 CampusMate Chatbot", layout="centered")
+# --------- THEME TOGGLE SETUP ---------
+st.set_page_config(page_title="🎓 CampusMate Chatbot", layout="wide")
+if "theme_mode" not in st.session_state:
+    st.session_state.theme_mode = "Light"
+
+# --------- SIDEBAR (Left Panel) ---------
+with st.sidebar:
+    st.image("baf60389-f069-438c-9d7a-391a52da9b10.png", width=100)  # CampusMate logo
+    st.title("🤖 CampusMate")
+    st.markdown("Your AI Assistant for Campus Life")
+    
+    st.subheader("🎨 Theme")
+    theme = st.radio("Choose theme", ["Light", "Dark"], index=0 if st.session_state.theme_mode == "Light" else 1)
+    st.session_state.theme_mode = theme
+
+    st.markdown("---")
+    st.caption("📜 Chat History")
+    if not st.session_state.get("chat_history"):
+        st.info("No previous chats yet.")
+    else:
+        for i, (sender, msg) in enumerate(st.session_state.chat_history[-5:]):
+            st.markdown(f"**{sender}:** {msg[:25]}...")
+
+# --------- MAIN TITLE ---------
 st.title("🎓 CampusMate – AI Assistant (Gemini 2.0 Flash)")
 
-# Session state setup
+# --------- SESSION STATE ---------
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "edit_mode" not in st.session_state:
@@ -15,19 +37,17 @@ if "edited_input" not in st.session_state:
 if "search_term" not in st.session_state:
     st.session_state.search_term = ""
 
-# --- Top Controls ---
-col1, col2 = st.columns([1, 4])
-with col1:
-    if st.button("🧹 New Chat"):
-        st.session_state.chat_history.clear()
-        st.session_state.edit_mode = False
-        st.session_state.edited_input = ""
-        st.session_state.search_term = ""
-        st.rerun()
+# --------- NEW CHAT BUTTON ---------
+if st.button("🧹 New Chat"):
+    st.session_state.chat_history.clear()
+    st.session_state.edit_mode = False
+    st.session_state.edited_input = ""
+    st.session_state.search_term = ""
+    st.rerun()
 
 st.divider()
 
-# --- Input Section ---
+# --------- CHAT INPUT ---------
 if not st.session_state.edit_mode:
     user_input = st.text_input("🧑‍🎓 You:", key="input_box")
 else:
@@ -57,7 +77,7 @@ with col2:
 
 st.divider()
 
-# --- Search Chat History ---
+# --------- CHAT HISTORY + SEARCH ---------
 if st.session_state.chat_history:
     search_input = st.text_input("🔍 Search Chat History", value=st.session_state.search_term, key="search_bar")
     st.session_state.search_term = search_input.strip()
