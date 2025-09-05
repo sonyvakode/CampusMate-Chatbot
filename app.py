@@ -101,28 +101,23 @@ with chat_container:
         st.info("No conversation yet. Start chatting below!")
 
 
-# --------- BOTTOM CHAT INPUT ---------
-col1, col2 = st.columns([10, 1])
-
-with col1:
+# --------- BOTTOM CHAT INPUT WITH ENTER TO SEND ---------
+with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input(
         "Ask anything about studies...",
-        value=st.session_state.chat_input,
         key="chat_input",
         label_visibility="collapsed",
         placeholder="Ask anything about studies...",
     )
-
-with col2:
-    send_pressed = st.button("⬆️", key="send_btn")
+    send_pressed = st.form_submit_button("Send")  # Enter key works here
 
 # --------- HANDLE SEND ---------
-if (send_pressed or (user_input and user_input.strip())) and user_input:
+if send_pressed and user_input:
     with st.spinner("Thinking..."):
         response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
 
     st.session_state.chat_history.append(("You", user_input))
     st.session_state.chat_history.append(("CampusMate", response))
 
-    st.session_state.chat_input = ""  # clear input after send
+    # Clear input handled automatically by clear_on_submit=True
     st.rerun()
