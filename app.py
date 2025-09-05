@@ -15,6 +15,8 @@ if "search_term" not in st.session_state:
     st.session_state.search_term = ""
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Light"
+if "language_pref" not in st.session_state:
+    st.session_state.language_pref = "English"
 
 # --------- SIDEBAR ---------
 with st.sidebar:
@@ -24,6 +26,14 @@ with st.sidebar:
     st.subheader("Theme")
     theme = st.radio("Choose theme", ["Light", "Dark"], index=0 if st.session_state.theme_mode == "Light" else 1)
     st.session_state.theme_mode = theme
+
+    st.subheader("Language")
+    lang = st.selectbox(
+        "Choose your preferred language",
+        ["English", "Hindi", "Telugu", "Marathi", "Other"],
+        index=["English", "Hindi", "Telugu", "Marathi", "Other"].index(st.session_state.language_pref),
+    )
+    st.session_state.language_pref = lang
 
     st.markdown("---")
     st.caption("Recent Conversations")
@@ -66,7 +76,8 @@ with st.container():
 
     if submitted and user_input.strip():
         with st.spinner("Thinking..."):
-            response = ask_dify(user_input)
+            # Pass language preference to the assistant
+            response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
         st.session_state.chat_history.append(("You", user_input))
         st.session_state.chat_history.append(("CampusMate", response))
         st.session_state.edit_mode = False
