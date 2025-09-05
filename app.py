@@ -17,9 +17,9 @@ if "language_pref" not in st.session_state:
 if "chat_input" not in st.session_state:
     st.session_state.chat_input = ""
 if "username" not in st.session_state:
-    st.session_state.username = "User"
-if "password" not in st.session_state:
-    st.session_state.password = "1234"
+    st.session_state.username = "SONY vakode"
+if "plan" not in st.session_state:
+    st.session_state.plan = "Free"
 
 
 # --------- LOGIN PAGE ---------
@@ -49,55 +49,45 @@ if not st.session_state.logged_in:
 st.markdown(
     """
     <style>
-    /* Whole app background */
+    /* App background */
     .stApp {
         background: #ffffff;
     }
 
-    /* Sidebar clean white */
+    /* Sidebar Blue */
     section[data-testid="stSidebar"] {
-        background-color: white !important;
-    }
-
-    /* Chat container */
-    div[data-testid="stVerticalBlock"] > div:first-child {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-    }
-
-    /* Fixed bottom input bar */
-    .stBottomContainer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        padding: 10px 15px;
-        border-top: 1px solid #ddd;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 100;
-    }
-
-    /* Chat input styling */
-    .chat-box {
-        flex: 1;
-        border: 1px solid #ccc;
-        border-radius: 25px;
-        padding: 8px 15px;
-    }
-
-    /* Black send button */
-    .send-btn {
-        background-color: black !important;
+        background-color: #004080 !important;  /* Blue */
         color: white !important;
+    }
+
+    /* Sidebar text white */
+    section[data-testid="stSidebar"] * {
+        color: white !important;
+    }
+
+    /* Sidebar buttons */
+    .sidebar-btn {
+        background: none;
         border: none;
-        padding: 8px 14px;
-        border-radius: 50%;
-        font-size: 18px;
+        color: white !important;
+        text-align: left;
+        font-size: 16px;
+        padding: 8px 12px;
         cursor: pointer;
+        width: 100%;
+    }
+    .sidebar-btn:hover {
+        background: #0059b3;
+        border-radius: 5px;
+    }
+
+    /* User info at bottom */
+    .user-info {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        font-size: 14px;
+        color: white;
     }
     </style>
     """,
@@ -105,46 +95,31 @@ st.markdown(
 )
 
 
-# --------- SIDEBAR ---------
+# --------- SIDEBAR MENU ---------
 with st.sidebar:
-    st.title("CampusMate")
-    st.markdown("Your personal AI assistant for campus needs.")
+    st.markdown("### CampusMate Menu")
 
-    st.subheader("Language")
-    lang = st.selectbox(
-        "Choose your preferred language",
-        ["English", "Hindi", "Telugu", "Marathi", "Other"],
-        index=["English", "Hindi", "Telugu", "Marathi", "Other"].index(
-            st.session_state.language_pref
-        ),
-    )
-    st.session_state.language_pref = lang
+    if st.button("⚙️ Settings", key="settings", help="Change preferences", use_container_width=True):
+        st.info("Settings page coming soon...")
 
-    st.markdown("---")
-    st.subheader("Settings ⚙️")
-    new_username = st.text_input("Change Username", st.session_state.username)
-    new_password = st.text_input("Change Password", type="password")
-    if st.button("Save Settings"):
-        if new_username:
-            st.session_state.username = new_username
-        if new_password:
-            st.session_state.password = new_password
-        st.success("Settings updated ✅")
+    if st.button("❓ Help", key="help", help="Get help", use_container_width=True):
+        st.info("Help section coming soon...")
 
-    if st.button("Logout"):
+    if st.button("↩️ Logout", key="logout", help="Log out", use_container_width=True):
         st.session_state.logged_in = False
         st.session_state.chat_history = []
-        st.success("Logged out successfully")
         st.rerun()
 
-    st.markdown("---")
-    st.caption("Recent Conversations")
-    if not st.session_state.chat_history:
-        st.info("No previous chats yet.")
-    else:
-        for sender, msg in st.session_state.chat_history[-5:]:
-            if sender == "You":
-                st.markdown(f"- **You:** {msg[:40]}...")
+    # User info at bottom
+    st.markdown(
+        f"""
+        <div class="user-info">
+            <b>{st.session_state.username}</b><br>
+            {st.session_state.plan}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 # --------- MAIN CHAT AREA ---------
@@ -162,7 +137,12 @@ with chat_container:
 
 
 # --------- BOTTOM INPUT BAR ---------
-st.markdown('<div class="stBottomContainer">', unsafe_allow_html=True)
+st.markdown(
+    """
+    <div class="stBottomContainer">
+    """,
+    unsafe_allow_html=True,
+)
 
 col1, col2 = st.columns([10, 1])
 
@@ -178,7 +158,7 @@ with col1:
 with col2:
     send_pressed = st.button("⬆️", key="send_btn", help="Send", use_container_width=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 
 # --------- HANDLE SEND ---------
