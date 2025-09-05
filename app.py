@@ -16,6 +16,10 @@ if "language_pref" not in st.session_state:
     st.session_state.language_pref = "English"
 if "chat_input" not in st.session_state:
     st.session_state.chat_input = ""
+if "username" not in st.session_state:
+    st.session_state.username = "User"
+if "password" not in st.session_state:
+    st.session_state.password = "1234"
 
 
 # --------- LOGIN PAGE ---------
@@ -47,7 +51,7 @@ st.markdown(
     <style>
     /* Whole app background */
     .stApp {
-        background: #f5f7fa;
+        background: #ffffff;
     }
 
     /* Sidebar clean white */
@@ -55,9 +59,9 @@ st.markdown(
         background-color: white !important;
     }
 
-    /* Main chat area with subtle gradient */
+    /* Chat container */
     div[data-testid="stVerticalBlock"] > div:first-child {
-        background: linear-gradient(135deg, #eef3ff, #f7fcf9);
+        background: #ffffff;
         padding: 20px;
         border-radius: 10px;
     }
@@ -115,6 +119,23 @@ with st.sidebar:
         ),
     )
     st.session_state.language_pref = lang
+
+    st.markdown("---")
+    st.subheader("Settings ⚙️")
+    new_username = st.text_input("Change Username", st.session_state.username)
+    new_password = st.text_input("Change Password", type="password")
+    if st.button("Save Settings"):
+        if new_username:
+            st.session_state.username = new_username
+        if new_password:
+            st.session_state.password = new_password
+        st.success("Settings updated ✅")
+
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.chat_history = []
+        st.success("Logged out successfully")
+        st.rerun()
 
     st.markdown("---")
     st.caption("Recent Conversations")
