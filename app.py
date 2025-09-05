@@ -45,9 +45,21 @@ if not st.session_state.logged_in:
 st.markdown(
     """
     <style>
-    /* Background */
+    /* Whole app background */
     .stApp {
-        background: linear-gradient(135deg, #f0f4ff, #e6f7f1);
+        background: #f5f7fa;
+    }
+
+    /* Sidebar clean white */
+    section[data-testid="stSidebar"] {
+        background-color: white !important;
+    }
+
+    /* Main chat area with subtle gradient */
+    div[data-testid="stVerticalBlock"] > div:first-child {
+        background: linear-gradient(135deg, #eef3ff, #f7fcf9);
+        padding: 20px;
+        border-radius: 10px;
     }
 
     /* Fixed bottom input bar */
