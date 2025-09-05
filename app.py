@@ -1,4 +1,6 @@
 import streamlit as st
+import random
+
 from utils.chat import ask_dify  # Replace with your actual function
 
 # --------- PAGE CONFIG ---------
@@ -7,28 +9,45 @@ st.set_page_config(page_title="CampusMate Chatbot", layout="wide")
 # --------- SESSION STATE INIT ---------
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+if "otp_sent" not in st.session_state:
+    st.session_state.otp_sent = False
+if "generated_otp" not in st.session_state:
+    st.session_state.generated_otp = None
+if "phone_number" not in st.session_state:
+    st.session_state.phone_number = ""
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "edited_input" not in st.session_state:
-    st.session_state.edited_input = ""
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Light"
 if "language_pref" not in st.session_state:
     st.session_state.language_pref = "English"
 
-# --------- LOGIN PAGE ---------
+# --------- LOGIN WITH PHONE + OTP ---------
 if not st.session_state.authenticated:
-    st.title("🔐 CampusMate Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        # ⚠️ Replace with proper authentication later
-        if username and password:
-            st.session_state.authenticated = True
-            st.success(f"Welcome {username}!")
-            st.rerun()
+    st.title("📱 CampusMate Login")
+
+    phone = st.text_input("Enter Phone Number", value=st.session_state.phone_number)
+
+    if st.button("Send OTP"):
+        if phone.strip().isdigit() and len(phone) >= 10:
+            otp = random.randint(1000, 9999)  # generate 4-digit OTP
+            st.session_state.generated_otp = str(otp)
+            st.session_state.phone_number = phone
+            st.session_state.otp_sent = True
+            st.success(f"✅ OTP sent to {phone} (for demo: {otp})")  # show OTP for demo
         else:
-            st.error("Invalid username or password.")
+            st.error("Enter a valid phone number.")
+
+    if st.session_state.otp_sent:
+        otp_input = st.text_input("Enter OTP", type="password")
+        if st.button("Verify OTP"):
+            if otp_input == st.session_state.generated_otp:
+                st.session_state.authenticated = True
+                st.session_state.otp_sent = False
+                st.success("🎉 Login successful!")
+                st.rerun()
+            else:
+                st.error("Invalid OTP. Try again.")
     st.stop()
 
 # --------- SIDEBAR ---------
@@ -129,8 +148,6 @@ with st.container():
     with col1:
         user_input = st.text_input(
             "Ask anything about studies...",
-            value=st.session_state.edited_input,
-            label_visibility="collapsed",
             key="chat_input",
             placeholder="Ask anything about studies...",
         )
@@ -141,11 +158,10 @@ with st.container():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --------- HANDLE SEND ---------
-# Auto send on Enter OR button click
-if (send_pressed or (user_input and user_input != st.session_state.edited_input)) and user_input.strip():
+if (send_pressed or user_input) and user_input.strip():
     with st.spinner("Thinking..."):
         response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
     st.session_state.chat_history.append(("You", user_input))
     st.session_state.chat_history.append(("CampusMate", response))
-    st.session_state.edited_input = ""  # clear input after send
+    st.session_state.chat_input = ""  # clear input after send
     st.rerun()
