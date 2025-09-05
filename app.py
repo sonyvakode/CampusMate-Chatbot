@@ -17,9 +17,7 @@ if "language_pref" not in st.session_state:
 if "chat_input" not in st.session_state:
     st.session_state.chat_input = ""
 if "username" not in st.session_state:
-    st.session_state.username = "SONY vakode"
-if "plan" not in st.session_state:
-    st.session_state.plan = "Free"
+    st.session_state.username = None
 
 
 # --------- LOGIN PAGE ---------
@@ -38,6 +36,7 @@ if not st.session_state.logged_in:
     if st.button("Login"):
         if otp_entered == st.session_state.otp:
             st.session_state.logged_in = True
+            st.session_state.username = phone
             st.success("Login successful ✅")
             st.rerun()
         else:
@@ -45,49 +44,16 @@ if not st.session_state.logged_in:
     st.stop()
 
 
-# --------- STYLING ---------
+# --------- SIDEBAR STYLING ---------
 st.markdown(
     """
     <style>
-    /* App background */
-    .stApp {
-        background: #ffffff;
-    }
-
-    /* Sidebar Blue */
     section[data-testid="stSidebar"] {
-        background-color: #004080 !important;  /* Blue */
+        background: linear-gradient(135deg, #004080, #0066cc);
         color: white !important;
     }
-
-    /* Sidebar text white */
     section[data-testid="stSidebar"] * {
         color: white !important;
-    }
-
-    /* Sidebar buttons */
-    .sidebar-btn {
-        background: none;
-        border: none;
-        color: white !important;
-        text-align: left;
-        font-size: 16px;
-        padding: 8px 12px;
-        cursor: pointer;
-        width: 100%;
-    }
-    .sidebar-btn:hover {
-        background: #0059b3;
-        border-radius: 5px;
-    }
-
-    /* User info at bottom */
-    .user-info {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        font-size: 14px;
-        color: white;
     }
     </style>
     """,
@@ -95,35 +61,34 @@ st.markdown(
 )
 
 
-# --------- SIDEBAR MENU ---------
+# --------- SIDEBAR ---------
 with st.sidebar:
-    st.markdown("### CampusMate Menu")
+    st.title("CampusMate")
+    st.markdown("Your personal AI assistant for campus needs.")
 
-    if st.button("⚙️ Settings", key="settings", help="Change preferences", use_container_width=True):
-        st.info("Settings page coming soon...")
+    st.subheader("Theme")
+    theme = st.radio("Choose theme", ["Light", "Dark"], index=0)
 
-    if st.button("❓ Help", key="help", help="Get help", use_container_width=True):
-        st.info("Help section coming soon...")
+    st.subheader("Language")
+    lang = st.selectbox(
+        "Choose your preferred language",
+        ["English", "Hindi", "Telugu", "Marathi", "Other"],
+        index=0,
+    )
+    st.session_state.language_pref = lang
 
-    if st.button("↩️ Logout", key="logout", help="Log out", use_container_width=True):
+    st.markdown("---")
+    st.subheader("Account")
+    st.write(f"📱 Logged in as: **{st.session_state.username}**")
+    if st.button("↩️ Logout"):
         st.session_state.logged_in = False
         st.session_state.chat_history = []
+        st.session_state.username = None
         st.rerun()
-
-    # User info at bottom
-    st.markdown(
-        f"""
-        <div class="user-info">
-            <b>{st.session_state.username}</b><br>
-            {st.session_state.plan}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 # --------- MAIN CHAT AREA ---------
-st.markdown("### 💬 CampusMate Chat")
+st.markdown("### CampusMate Chat")
 st.divider()
 
 chat_container = st.container()
@@ -136,14 +101,7 @@ with chat_container:
         st.info("No conversation yet. Start chatting below!")
 
 
-# --------- BOTTOM INPUT BAR ---------
-st.markdown(
-    """
-    <div class="stBottomContainer">
-    """,
-    unsafe_allow_html=True,
-)
-
+# --------- BOTTOM CHAT INPUT ---------
 col1, col2 = st.columns([10, 1])
 
 with col1:
@@ -156,18 +114,15 @@ with col1:
     )
 
 with col2:
-    send_pressed = st.button("⬆️", key="send_btn", help="Send", use_container_width=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
-
+    send_pressed = st.button("⬆️", key="send_btn")
 
 # --------- HANDLE SEND ---------
-if (send_pressed or user_input.strip()) and user_input:
+if (send_pressed or (user_input and user_input.strip())) and user_input:
     with st.spinner("Thinking..."):
         response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
 
     st.session_state.chat_history.append(("You", user_input))
     st.session_state.chat_history.append(("CampusMate", response))
 
-    st.session_state["chat_input"] = ""  # clear input after send
+    st.session_state.chat_input = ""  # clear input after send
     st.rerun()
