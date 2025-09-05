@@ -46,13 +46,9 @@ with st.sidebar:
 
 # --------- MAIN CHAT AREA ---------
 st.markdown("### CampusMate Chat")
-st.markdown("Ask me anything about campus facilities, deadlines, or student help.")
-
 st.divider()
 
-# --------- CHAT DISPLAY ---------
 chat_container = st.container()
-
 with chat_container:
     if st.session_state.chat_history:
         for sender, msg in st.session_state.chat_history:
@@ -61,63 +57,52 @@ with chat_container:
     else:
         st.info("No conversation yet. Start chatting below!")
 
-# --------- CHAT INPUT BAR ---------
+# --------- CHAT INPUT (BOTTOM BAR) ---------
+st.markdown(
+    """
+    <style>
+    .stBottomContainer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+        z-index: 100;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 with st.container():
-    with st.form("chat_form", clear_on_submit=True):
-        col1, col2 = st.columns([6, 1])
-        with col1:
-            user_input = st.text_input(
-                "Type your message...",
-                value=st.session_state.edited_input if st.session_state.edit_mode else "",
-                label_visibility="collapsed",
-            )
-        with col2:
-            submitted = st.form_submit_button("Send", use_container_width=True)
+    st.markdown('<div class="stBottomContainer">', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([10, 1, 1])
 
-    if submitted and user_input.strip():
-        with st.spinner("Thinking..."):
-            # Pass language preference to the assistant
-            response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
-        st.session_state.chat_history.append(("You", user_input))
-        st.session_state.chat_history.append(("CampusMate", response))
-        st.session_state.edit_mode = False
-        st.session_state.edited_input = ""
-        st.rerun()
+    with col1:
+        user_input = st.text_input(
+            "Type your message...",
+            value=st.session_state.edited_input if st.session_state.edit_mode else "",
+            label_visibility="collapsed",
+            key="chat_input",
+        )
+    with col2:
+        send_pressed = st.button("⬆️", key="send_btn")
+    with col3:
+        audio_pressed = st.button("🎤", key="audio_btn")
 
-# --------- ACTION BUTTONS ---------
-colA, colB = st.columns([1, 1])
-with colA:
-    if st.button("New Chat"):
-        st.session_state.chat_history.clear()
-        st.session_state.edit_mode = False
-        st.session_state.edited_input = ""
-        st.session_state.search_term = ""
-        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-with colB:
-    if st.session_state.chat_history and st.button("Edit Last"):
-        for i in reversed(range(len(st.session_state.chat_history))):
-            if st.session_state.chat_history[i][0] == "You":
-                st.session_state.edited_input = st.session_state.chat_history[i][1]
-                st.session_state.chat_history = st.session_state.chat_history[:i]
-                st.session_state.edit_mode = True
-                break
-        st.rerun()
+# --------- HANDLE INPUT ---------
+if (send_pressed or user_input.strip()) and not st.session_state.edit_mode:
+    with st.spinner("Thinking..."):
+        response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
+    st.session_state.chat_history.append(("You", user_input))
+    st.session_state.chat_history.append(("CampusMate", response))
+    st.session_state.edited_input = ""
+    st.rerun()
 
-# --------- SEARCH ---------
-st.divider()
-search_input = st.text_input("Search in chat", value=st.session_state.search_term)
-st.session_state.search_term = search_input.strip()
-
-if st.session_state.search_term:
-    filtered = [
-        (sender, msg) for sender, msg in st.session_state.chat_history
-        if st.session_state.search_term.lower() in msg.lower()
-    ]
-    if filtered:
-        st.subheader("Search Results")
-        for sender, msg in filtered:
-            with st.chat_message("user" if sender == "You" else "assistant"):
-                st.markdown(f"**{sender}:** {msg}")
-    else:
-        st.warning("No results found.")
+# --------- AUDIO PLACEHOLDER ---------
+if audio_pressed:
+    st.info("🎤 Voice input feature coming soon!")
