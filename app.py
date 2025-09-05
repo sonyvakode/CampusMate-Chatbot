@@ -7,12 +7,8 @@ st.set_page_config(page_title="CampusMate Chatbot", layout="wide")
 # --------- SESSION STATE INIT ---------
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "edit_mode" not in st.session_state:
-    st.session_state.edit_mode = False
 if "edited_input" not in st.session_state:
     st.session_state.edited_input = ""
-if "search_term" not in st.session_state:
-    st.session_state.search_term = ""
 if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Light"
 if "language_pref" not in st.session_state:
@@ -57,7 +53,7 @@ with chat_container:
     else:
         st.info("No conversation yet. Start chatting below!")
 
-# --------- CHAT INPUT (BOTTOM BAR) ---------
+# --------- BOTTOM CHAT INPUT ---------
 st.markdown(
     """
     <style>
@@ -83,7 +79,7 @@ with st.container():
     with col1:
         user_input = st.text_input(
             "Type your message...",
-            value=st.session_state.edited_input if st.session_state.edit_mode else "",
+            value=st.session_state.edited_input,
             label_visibility="collapsed",
             key="chat_input",
         )
@@ -94,13 +90,13 @@ with st.container():
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --------- HANDLE INPUT ---------
-if (send_pressed or user_input.strip()) and not st.session_state.edit_mode:
+# --------- HANDLE SEND ---------
+if send_pressed and user_input.strip():
     with st.spinner("Thinking..."):
         response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
     st.session_state.chat_history.append(("You", user_input))
     st.session_state.chat_history.append(("CampusMate", response))
-    st.session_state.edited_input = ""
+    st.session_state.edited_input = ""  # clear input after send
     st.rerun()
 
 # --------- AUDIO PLACEHOLDER ---------
