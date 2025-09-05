@@ -5,6 +5,8 @@ from utils.chat import ask_dify  # Replace with your actual function
 st.set_page_config(page_title="CampusMate Chatbot", layout="wide")
 
 # --------- SESSION STATE INIT ---------
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "edited_input" not in st.session_state:
@@ -13,6 +15,21 @@ if "theme_mode" not in st.session_state:
     st.session_state.theme_mode = "Light"
 if "language_pref" not in st.session_state:
     st.session_state.language_pref = "English"
+
+# --------- LOGIN PAGE ---------
+if not st.session_state.authenticated:
+    st.title("🔐 CampusMate Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        # ⚠️ Replace with proper authentication later
+        if username and password:
+            st.session_state.authenticated = True
+            st.success(f"Welcome {username}!")
+            st.rerun()
+        else:
+            st.error("Invalid username or password.")
+    st.stop()
 
 # --------- SIDEBAR ---------
 with st.sidebar:
@@ -40,6 +57,12 @@ with st.sidebar:
             if sender == "You":
                 st.markdown(f"- **You:** {msg[:40]}...")
 
+    st.markdown("---")
+    if st.button("Logout"):
+        st.session_state.authenticated = False
+        st.session_state.chat_history = []
+        st.rerun()
+
 # --------- MAIN CHAT AREA ---------
 st.markdown("### CampusMate Chat")
 st.divider()
@@ -53,16 +76,19 @@ with chat_container:
     else:
         st.info("No conversation yet. Start chatting below!")
 
-# --------- BOTTOM CHAT INPUT (Updated to ChatGPT style) ---------
+# --------- CUSTOM STYLE ---------
 st.markdown(
     """
     <style>
+    body {
+        background: linear-gradient(135deg, #e3f2fd, #ffffff);
+    }
     .stBottomContainer {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        background-color: white;
+        background-color: #f9f9f9;
         padding: 8px 12px;
         border-top: 1px solid #ddd;
         display: flex;
@@ -80,47 +106,46 @@ st.markdown(
         font-size: 18px;
         cursor: pointer;
         border: none;
-        background: none;
+        background: black;
+        color: white;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+# --------- BOTTOM CHAT INPUT ---------
 with st.container():
     st.markdown('<div class="stBottomContainer">', unsafe_allow_html=True)
 
-    col1, col2, col3, col4 = st.columns([0.5, 9, 0.7, 0.7])
+    col1, col2 = st.columns([9, 1])
 
     with col1:
-        st.markdown("➕")  # Plus icon (left)
-
-    with col2:
         user_input = st.text_input(
-            "Ask anything",
+            "Ask anything about studies...",
             value=st.session_state.edited_input,
             label_visibility="collapsed",
             key="chat_input",
-            placeholder="Ask anything...",
+            placeholder="Ask anything about studies...",
         )
 
-    with col3:
-        audio_pressed = st.button("🎤", key="audio_btn")
-
-    with col4:
-        send_pressed = st.button("⬆️", key="send_btn")
+    with col2:
+        send_pressed = st.button("⬆️", key="send_btn", help="Send")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --------- HANDLE SEND ---------
-if send_pressed and user_input.strip():
+# Auto send on Enter OR button click
+if (send_pressed or (user_input and user_input != st.session_state.edited_input)) and user_input.strip():
     with st.spinner("Thinking..."):
         response = ask_dify(f"[Language: {st.session_state.language_pref}] {user_input}")
     st.session_state.chat_history.append(("You", user_input))
     st.session_state.chat_history.append(("CampusMate", response))
     st.session_state.edited_input = ""  # clear input after send
     st.rerun()
-
-# --------- AUDIO PLACEHOLDER ---------
-if audio_pressed:
-    st.info("🎤 Voice input feature coming soon!")
